@@ -32,10 +32,14 @@ export class HomeTeam {
 	}
 
 	get textPrivate(): Locator {
-		return this.page.locator('label', {has: this.page.getByRole('checkbox', {name: 'Private'})});
+		return this.page.locator('label', { has: this.page.getByRole('checkbox', { name: 'Private' }) });
 	}
 
 	get textReadOnly(): Locator {
-		return this.page.locator('label', {has: this.page.getByRole('checkbox', {name: 'Read-only'})});
+		return this.page.locator('label', { has: this.page.getByRole('checkbox', { name: 'Read-only' }) });
+	}
+
+	getSystemMessageByText(text: string): Locator {
+		return this.page.locator('[aria-roledescription="system message"]', { hasText: text });
 	}
 }
