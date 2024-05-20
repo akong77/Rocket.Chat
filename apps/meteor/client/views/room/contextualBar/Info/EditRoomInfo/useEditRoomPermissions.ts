@@ -34,6 +34,7 @@ export const useEditRoomPermissions = (room: IRoom | IRoomWithRetentionPolicy) =
 		canViewReadOnly,
 		canViewHideSysMes,
 		canViewJoinCode,
+		canViewReactWhenReadOnly,
 		canViewEncrypted,
 	] = useMemo(() => {
 		const isAllowed =
@@ -72,6 +73,7 @@ export const useEditRoomPermissions = (room: IRoom | IRoomWithRetentionPolicy) =
 		canViewReadOnly,
 		canViewHideSysMes,
 		canViewJoinCode,
+		canViewReactWhenReadOnly,
 		canViewEncrypted,
 	};
 };
