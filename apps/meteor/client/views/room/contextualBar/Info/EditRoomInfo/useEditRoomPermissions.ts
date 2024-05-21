@@ -2,7 +2,6 @@ import type { IRoom, IRoomWithRetentionPolicy } from '@rocket.chat/core-typings'
 import { usePermission, useAtLeastOnePermission, useRole } from '@rocket.chat/ui-contexts';
 import { useMemo } from 'react';
 
-import { e2e } from '../../../../../../app/e2e/client/rocketchat.e2e';
 import { RoomSettingsEnum } from '../../../../../../definition/IRoomTypeConfig';
 import { roomCoordinator } from '../../../../../lib/rooms/roomCoordinator';
 
@@ -22,7 +21,7 @@ export const useEditRoomPermissions = (room: IRoom | IRoomWithRetentionPolicy) =
 		useMemo(() => ['archive-room', 'unarchive-room'], []),
 		room._id,
 	);
-	const canToggleEncryption = usePermission('toggle-room-e2e-encryption', room._id) && (room.encrypted || e2e.isReady());
+	const canToggleEncryption = usePermission('toggle-room-e2e-encryption', room._id);
 
 	const [
 		canViewName,
