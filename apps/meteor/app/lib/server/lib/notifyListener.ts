@@ -14,6 +14,7 @@ import type {
 	IEmailInbox,
 	IIntegrationHistory,
 	AtLeast,
+	IUser,
 } from '@rocket.chat/core-typings';
 import {
 	Rooms,
@@ -25,6 +26,7 @@ import {
 	LoginServiceConfiguration,
 	IntegrationHistory,
 	LivechatDepartmentAgents,
+	Users,
 } from '@rocket.chat/models';
 
 type ClientAction = 'inserted' | 'updated' | 'removed';
@@ -352,4 +354,46 @@ export async function notifyOnLivechatDepartmentAgentChangedByAgentsAndDepartmen
 	for await (const item of items) {
 		void api.broadcast('watch.livechatDepartmentAgents', { clientAction, id: item._id, data: item });
 	}
+}
+
+export async function notifyOnUserChange({
+	clientAction,
+	id,
+	data,
+	diff,
+	unset,
+}: {
+	id: IUser['_id'];
+	clientAction: 'inserted' | 'removed' | 'updated';
+	data?: IUser;
+	diff?: Record<string, any>;
+	unset?: Record<string, number>;
+}) {
+	if (!dbWatchersDisabled) {
+		return;
+	}
+
+	if (clientAction === 'removed') {
+		void api.broadcast('watch.users', { clientAction, id });
+		return;
+	}
+	if (clientAction === 'inserted') {
+		void api.broadcast('watch.users', { clientAction, id, data: data! });
+		return;
+	}
+
+	void api.broadcast('watch.users', { clientAction, diff: diff!, unset: unset || {}, id });
+}
+
+export async function notifyOnUserChangeById({ clientAction, id }: { id: IUser['_id']; clientAction: 'inserted' | 'removed' | 'updated' }) {
+	if (!dbWatchersDisabled) {
+		return;
+	}
+
+	const user = await Users.findOneById(id);
+	if (!user) {
+		return;
+	}
+
+	void notifyOnUserChange({ id, clientAction, data: user });
 }
