@@ -57,7 +57,11 @@ import { FileUpload } from '../../../file-upload/server';
 import { deleteMessage } from '../../../lib/server/functions/deleteMessage';
 import { sendMessage } from '../../../lib/server/functions/sendMessage';
 import { updateMessage } from '../../../lib/server/functions/updateMessage';
-import { notifyOnLivechatDepartmentAgentChangedByDepartmentId, notifyOnRoomChangedById } from '../../../lib/server/lib/notifyListener';
+import {
+	notifyOnLivechatDepartmentAgentChangedByDepartmentId,
+	notifyOnRoomChangedById,
+	notifyOnUserChange,
+} from '../../../lib/server/lib/notifyListener';
 import * as Mailer from '../../../mailer/server/api';
 import { metrics } from '../../../metrics/server';
 import { settings } from '../../../settings/server';
@@ -1670,6 +1674,18 @@ class LivechatClass {
 	async setUserStatusLivechat(userId: string, status: ILivechatAgentStatus) {
 		const user = await Users.setLivechatStatus(userId, status);
 		callbacks.runAsync('livechat.setUserStatusLivechat', { userId, status });
+
+		if (user.modifiedCount > 0) {
+			void notifyOnUserChange({
+				id: userId,
+				clientAction: 'updated',
+				diff: {
+					statusLivechat: status,
+					livechatStatusSystemModified: false,
+				},
+			});
+		}
+
 		return user;
 	}
 
