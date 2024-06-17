@@ -61,6 +61,7 @@ import {
 	notifyOnLivechatDepartmentAgentChangedByDepartmentId,
 	notifyOnRoomChangedById,
 	notifyOnUserChange,
+	notifyOnUserChangeAsync,
 } from '../../../lib/server/lib/notifyListener';
 import * as Mailer from '../../../mailer/server/api';
 import { metrics } from '../../../metrics/server';
@@ -1938,6 +1939,32 @@ class LivechatClass {
 		}
 
 		return departmentDB;
+	}
+
+	async makeAgentsUnavailableBasedOnBusinessHour(agentIds: string[] = []) {
+		const results = await Users.findAgentsAvailableWithoutBusinessHours(agentIds).toArray();
+
+		const update = await Users.updateLivechatStatusByAgentIds(
+			results.map(({ _id }) => _id),
+			ILivechatAgentStatus.NOT_AVAILABLE,
+		);
+
+		if (update.modifiedCount === 0) {
+			return;
+		}
+
+		void notifyOnUserChangeAsync(async () =>
+			results.map(({ _id, openBusinessHours }) => {
+				return {
+					id: _id,
+					clientAction: 'updated',
+					diff: {
+						statusLivechat: 'not-available',
+						openBusinessHours,
+					},
+				};
+			}),
+		);
 	}
 }
 
